@@ -1,0 +1,95 @@
+" A vibe-coded DangerWrite script
+" Usage: :DangerWrite <hesitation_seconds> <duration_minutes>
+" Example: :DangerWrite 10 5
+" Hat tip to The Most Dangerous Writing App!
+
+command! -nargs=+ DangerWrite call s:start_danger(<f-args>)
+command! DangerStop call s:cleanup(bufnr('%'))
+
+function! s:start_danger(hesitation, duration_mins) abort
+  let b:danger_hesitation = str2nr(a:hesitation)
+  let l:mins = str2nr(a:duration_mins)
+  let b:danger_duration = l:mins * 60
+  let b:danger_original_mins = l:mins 
+  
+  let b:danger_start_time = reltime()
+  let b:danger_last_type = reltime()
+  let b:danger_active = 1
+
+  augroup DangerMode
+    autocmd! * <buffer>
+    autocmd TextChangedI <buffer> let b:danger_last_type = reltime()
+    autocmd BufLeave <buffer> call s:cleanup(bufnr('%'))
+  augroup END
+
+  let b:danger_timer = timer_start(1000, function('s:watchdog', [bufnr('%')]), {'repeat': -1})
+
+  " Start Message
+  echo "DANGER MODE. Keep writing!"
+endfunction
+
+function! s:watchdog(bufnr, timer_id) abort
+  if !getbufvar(a:bufnr, 'danger_active', 0)
+    call timer_stop(a:timer_id)
+    return
+  endif
+
+  " CHECK HESITATION
+  let l:last_type = getbufvar(a:bufnr, 'danger_last_type', [])
+  if !empty(l:last_type)
+    let l:gap = reltimefloat(reltime(l:last_type))
+    let l:limit = getbufvar(a:bufnr, 'danger_hesitation', 5)
+
+    if l:gap >= l:limit
+      " --- FAILURE SEQUENCE ---
+      call s:cleanup(a:bufnr)
+
+      " 1. Exit Insert Mode safely
+      call feedkeys("\<C-\>\<C-n>", 'n')
+
+      " 2. Silent & Immediate Deletion
+      silent! %delete _
+
+      " 3. Wipe undo history
+      let l:old_ul = &undolevels
+      let &l:undolevels = -1
+      let &l:undolevels = l:old_ul
+
+      " 4. Display Failure Message
+      redraw
+      echohl ErrorMsg
+      echo "YOU HESITATED for " . printf('%.1f', l:gap) . "s. Buffer wiped."
+      echohl None
+      return
+    endif
+  endif
+
+  " CHECK DURATION
+  let l:start = getbufvar(a:bufnr, 'danger_start_time', [])
+  if !empty(l:start)
+    let l:elapsed = reltimefloat(reltime(l:start))
+    let l:duration = getbufvar(a:bufnr, 'danger_duration', 300)
+
+    if l:elapsed >= l:duration
+      let l:mins = getbufvar(a:bufnr, 'danger_original_mins', 0)
+      call s:cleanup(a:bufnr)
+      redraw
+      " Success Message
+      echomsg "WELL DONE. You wrote for " . l:mins . " minute" . (l:mins == 1 ? "" : "s") . " non-stop."
+    endif
+  endif
+endfunction
+
+function! s:cleanup(bufnr) abort
+  call setbufvar(a:bufnr, 'danger_active', 0)
+  let l:tid = getbufvar(a:bufnr, 'danger_timer', -1)
+  if l:tid != -1
+    call timer_stop(l:tid)
+    call setbufvar(a:bufnr, 'danger_timer', -1)
+  endif
+  if bufexists(a:bufnr)
+    augroup DangerMode
+      execute 'autocmd! * <buffer=' . a:bufnr . '>'
+    augroup END
+  endif
+endfunction
