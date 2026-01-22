@@ -1,9 +1,9 @@
-" A vibe-coded DangerWrite script
-" Usage: :DangerWrite <hesitation_seconds> <duration_minutes>
-" Example: :DangerWrite 10 5
+" A vibe-coded WriteOn script
+" Usage: :WriteOn <hesitation_seconds> <duration_minutes>
+" Example: :WriteOn 10 5
 " Hat tip to The Most Dangerous Writing App!
 
-command! -nargs=+ DangerWrite call s:start_danger(<f-args>)
+command! -nargs=+ WriteOn call s:start_danger(<f-args>)
 command! DangerStop call s:cleanup(bufnr('%'))
 
 function! s:start_danger(hesitation, duration_mins) abort
@@ -25,7 +25,7 @@ function! s:start_danger(hesitation, duration_mins) abort
   let b:danger_timer = timer_start(1000, function('s:watchdog', [bufnr('%')]), {'repeat': -1})
 
   " Start Message
-  echo "DANGER MODE. Keep writing!"
+  echo "WRITE ON!"
 endfunction
 
 function! s:watchdog(bufnr, timer_id) abort
