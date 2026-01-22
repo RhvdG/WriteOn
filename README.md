@@ -22,4 +22,4 @@ Let me repeat that.
 
 **Use at your own risk. When you hesitate for too long, or try to write the buffer, the little that you wrote will be irretrievably lost.**
 
-_Note that there really is no need to type frantically, unless you set `<sec>` to something below 5 or so. Just keep writing. Think as you write (make thinking and writing one mental endeavour). You will edit everything to near-perfection later. Welcome time passing like a good wind in your sails: neither a feeble breeze nor a storm -- just right. And stay the course, skipper._
+_Note that there really is no need to type frantically, unless you set `<sec>` to something below 5 or so. Just keep writing. Think as you write (make thinking and writing one mental endeavour). You will edit everything to near-perfection later. Welcome time passing like a good wind in your sails: neither a feeble breeze nor a storm -- just right. Now stay the course, skipper._
