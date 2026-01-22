@@ -8,9 +8,11 @@ Note that when you fail (i.e. you hesitate longer than you allowed yourself to) 
 
 Doing things in normal mode doesn't count as typing.
 
-When the session time has passed (whatever you picked for `<min>`) you will be praised, and you can proceed to yank the contents of the buffer (`ggyG`), and use them elsewhere.
+Note that there really is no need to type *frantically*, unless you set `<sec>` to something below 10 or so. Just keep writing. You can edit later. Try to feel the pressure like wind in your sails. 
 
-This was competely vibe coded, except for the echo messages. Usually vibe coding gets me nowehere, but this seems to work fine, at least in MacVim (I didn't test it elsewhere, and you are welcome to).
+When the session time has passed (whatever you picked for `<min>`) you will be praised, and can proceed to yank the contents of the buffer (`ggyG`), to use elsewhere.
+
+This was competely vibe coded, except for the echo messages. Usually vibe coding gets me nowehere, but this seems to work fine, at least in MacVim (I didn't test it elsewhere, but you are welcome to).
 
 **Use at your own risk. Always invoke only in a new buffer.**
 
