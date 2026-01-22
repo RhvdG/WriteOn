@@ -1,12 +1,27 @@
 " A vibe-coded WriteOn script
 " Usage: :WriteOn <hesitation_seconds> <duration_minutes>
 " Example: :WriteOn 10 5
-" Hat tip to The Most Dangerous Writing App!
 
 command! -nargs=+ WriteOn call s:start_danger(<f-args>)
 command! DangerStop call s:cleanup(bufnr('%'))
 
 function! s:start_danger(hesitation, duration_mins) abort
+  " CHECK 1: Must be an unsaved (unnamed) buffer
+  if !empty(expand('%'))
+    echohl ErrorMsg
+    echo "A NON-STARTER: You must use an unsaved (unnamed) buffer."
+    echohl None
+    return
+  endif
+
+  " CHECK 2: Must be completely empty
+  if line('$') > 1 || getline(1) != ''
+    echohl ErrorMsg
+    echo "A NON-STARTER: The buffer must be empty."
+    echohl None
+    return
+  endif
+
   let b:danger_hesitation = str2nr(a:hesitation)
   let l:mins = str2nr(a:duration_mins)
   let b:danger_duration = l:mins * 60
@@ -16,16 +31,41 @@ function! s:start_danger(hesitation, duration_mins) abort
   let b:danger_last_type = reltime()
   let b:danger_active = 1
 
+  " LOCKDOWN: Set buffer type to 'nofile'
+  " This prevents standard :w from working and makes Vim treat it as a scratchpad.
+  setlocal buftype=nofile
+
   augroup DangerMode
     autocmd! * <buffer>
     autocmd TextChangedI <buffer> let b:danger_last_type = reltime()
     autocmd BufLeave <buffer> call s:cleanup(bufnr('%'))
+    
+    " TRAP: Catch any attempt to write this 'nofile' buffer
+    autocmd BufWriteCmd <buffer> call s:fail_on_save()
   augroup END
 
   let b:danger_timer = timer_start(1000, function('s:watchdog', [bufnr('%')]), {'repeat': -1})
 
-  " Start Message
-  echo "WRITE ON!"
+  echo "Keep writing!"
+endfunction
+
+" Special failure handler for saving attempts
+function! s:fail_on_save() abort
+  call s:cleanup(bufnr('%'))
+  silent! %delete _
+  
+  " Wipe undo history
+  let l:old_ul = &undolevels
+  let &l:undolevels = -1
+  let &l:undolevels = l:old_ul
+  
+  redraw
+  echohl ErrorMsg
+  echo "SAVING IS FORBIDDEN. Buffer wiped."
+  echohl None
+  
+  " We do NOT throw an error here because BufWriteCmd expects us to handle the write.
+  " By doing nothing (except wiping), we successfully 'handled' the write by destroying it.
 endfunction
 
 function! s:watchdog(bufnr, timer_id) abort
@@ -44,18 +84,13 @@ function! s:watchdog(bufnr, timer_id) abort
       " --- FAILURE SEQUENCE ---
       call s:cleanup(a:bufnr)
 
-      " 1. Exit Insert Mode safely
       call feedkeys("\<C-\>\<C-n>", 'n')
-
-      " 2. Silent & Immediate Deletion
       silent! %delete _
 
-      " 3. Wipe undo history
       let l:old_ul = &undolevels
       let &l:undolevels = -1
       let &l:undolevels = l:old_ul
 
-      " 4. Display Failure Message
       redraw
       echohl ErrorMsg
       echo "YOU HESITATED for " . printf('%.1f', l:gap) . "s. Buffer wiped."
@@ -72,9 +107,12 @@ function! s:watchdog(bufnr, timer_id) abort
 
     if l:elapsed >= l:duration
       let l:mins = getbufvar(a:bufnr, 'danger_original_mins', 0)
+      
+      " UNLOCK: Restore normal buffer type so user can save now
+      setlocal buftype=
+      
       call s:cleanup(a:bufnr)
       redraw
-      " Success Message
       echomsg "WELL DONE. You wrote for " . l:mins . " minute" . (l:mins == 1 ? "" : "s") . " non-stop."
     endif
   endif
