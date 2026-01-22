@@ -60,7 +60,7 @@ function! s:fail_on_save() abort
   
   redraw
   echohl ErrorMsg
-  echo "SAVING IS FORBIDDEN. Buffer wiped."
+  echo "SAVING IS FORBIDDEN. What you wrote is gone."
   echohl None
 endfunction
 
@@ -89,7 +89,7 @@ function! s:watchdog(bufnr, timer_id) abort
 
       redraw
       echohl ErrorMsg
-      echo "YOU HESITATED for " . printf('%.1f', l:gap) . "s. Buffer wiped."
+      echo "YOU HESITATED for " . printf('%.1f', l:gap) . "s. What you wrote is gone."
       echohl None
       return
     endif
