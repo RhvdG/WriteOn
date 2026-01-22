@@ -1,5 +1,5 @@
 # WriteOn
-## A.k.a. The Most Dangerous Vim Anti-Writers-Block Script
+## A.k.a. The Most Dangerous Vim Anti-Writer's-Block Script
 A script you can add to your .vimrc that will clear the buffer (and the undo register) when you hesitate for a few seconds while writing. Based on [The](https://www.squibler.io/dangerous-writing-prompt-app) excellent [Most Dangerous Writing App](https://www.squibler.io/dangerous-writing-prompt-app), which deserves all the credits for the concept. 
 
 When the script is in your .vimrc, open a new buffer, and enter the command `:WriteOn <sec> <min>` where `<sec>` is the number of seconds that you are allowed to hesitate before losing *all* of your buffer, and `<min>` the number of minutes that you want this creative ordeal to go on.
